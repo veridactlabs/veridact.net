@@ -7,6 +7,11 @@
     "directory": "./dist",
     "not_found_handling": "404-page",
     "html_handling": "auto-trailing-slash"
-  }
-  // Routes are added at cutover, after checking the site at veridact-net.<subdomain>.workers.dev.
+  },
+  // All of veridact.net is served by this Worker. The proxied DNS records still point at the old Hetzner
+  // host; removing these routes falls back to it.
+  "routes": [
+    { "pattern": "veridact.net/*", "zone_name": "veridact.net" },
+    { "pattern": "www.veridact.net/*", "zone_name": "veridact.net" }
+  ]
 }
