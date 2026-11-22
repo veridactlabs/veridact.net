@@ -39,10 +39,10 @@ The bank runs the verifier and Valet. Neither calls home: the verifier reads cac
 
 ## One payment, step by step
 
-1. **The agent gets a credential.** Its operator has delegated authority to it, within limits set by appointed approvers. The agent client renews an Agent Credential from an accredited issuer every few hours over ACME-A ([spec §9](/docs/veridact/spec/#9-issuance-protocol-acme-a)).
+1. **The agent gets a credential.** Its operator has delegated authority to it, within limits set by appointed approvers. The agent client renews an Agent Credential from an accredited issuer every few hours over ACME-A ([spec: Issuance protocol](/docs/veridact/spec/#issuance-protocol-acme-a)).
 2. **The customer grants a mandate.** In their own bank's app, the customer chooses an access level, such as Bill payer, approved payees, limits and a grant length ([Valet profile §2 and §3](/docs/valet/profile/#2-access-levels)). The consent screen shows the operator's verified name, taken from the credential, never the name the agent gives itself.
-3. **The agent proves who it is.** At the bank's authorisation server it presents its Agent Credential, by client attestation (pattern C) or token exchange (pattern A). The verifier runs its eight checks ([spec §11](/docs/veridact/spec/#11-verification)).
-4. **The bank issues a token.** It is bound to the agent's key, names the customer as `sub` and the agent as `act.sub`, and carries the operator's limits and the Valet grant ([spec §10.4](/docs/veridact/spec/#104-access-tokens)).
+3. **The agent proves who it is.** At the bank's authorisation server it presents its Agent Credential, by client attestation (pattern C) or token exchange (pattern A). The verifier runs its eight checks ([spec: Verification at the relying party](/docs/veridact/spec/#verification-at-the-relying-party)).
+4. **The bank issues a token.** It is bound to the agent's key, names the customer as `sub` and the agent as `act.sub`, and carries the operator's limits and the Valet grant ([spec: Verification at the relying party](/docs/veridact/spec/#verification-at-the-relying-party)).
 5. **The agent asks to pay.** The bank API runs Valet's check order: key proof, token, agent trust, grant status, authorisation, then the mandate ([Valet profile §4](/docs/valet/profile/#4-check-order-on-every-call)).
 6. **The lower limit applies.** The operator's delegation limits and the customer's mandate both apply, and Valet holds the payment against whichever is lower.
 7. **Outside the mandate, the customer decides.** If a rule stops the payment, Valet holds it and answers `approval_required` with a machine-readable reason. The customer approves that exact payment in the bank app.
@@ -50,7 +50,7 @@ The bank runs the verifier and Valet. Neither calls home: the verifier reads cac
 
 ## Mainstream assistants
 
-Claude, ChatGPT, Gemini and Copilot connect to a bank as one OAuth client per platform and will never hold a Veridact credential. Veridact instead issues a [Known-Assistant Credential](/docs/veridact/spec/#13-known-assistants) about each platform. The bank uses it to admit the client, to show the verified operator name on the consent screen, and as a kill switch. Because an entry identifies a platform and never an instance, assistants in this lane stop at the Approved payer level: the customer approves every payment.
+Claude, ChatGPT, Gemini and Copilot connect to a bank as one OAuth client per platform and will never hold a Veridact credential. Veridact instead issues a [known-assistant entry](/docs/veridact/spec/#known-assistant-entries) about each platform. The bank uses it to admit the client, to show the verified operator name on the consent screen, and as a kill switch. Because an entry identifies a platform and never an instance, assistants in this lane stop at the Approved payer level: the customer approves every payment.
 
 ## Stopping an agent
 
