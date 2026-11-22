@@ -1,0 +1,17 @@
+// Cloudflare Worker serving veridact.net as static files (Workers Free plan: static requests are free and unlimited).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "veridact-net",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page",
+    "html_handling": "auto-trailing-slash"
+  }
+  // Step 5 of the README cutover adds the custom domains. Leave this commented out until then,
+  // so the first deploys only go to veridact-net.<your-subdomain>.workers.dev for checking.
+  // ,"routes": [
+  //   { "pattern": "veridact.net", "custom_domain": true },
+  //   { "pattern": "www.veridact.net", "custom_domain": true }
+  // ]
+}

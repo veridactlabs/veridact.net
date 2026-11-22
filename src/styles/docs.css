@@ -1,0 +1,37 @@
+/* Veridact docs theme. Swap these values for the brand colours used on veridact.net. */
+:root {
+  --sl-color-accent-low: #0d2f2c;
+  --sl-color-accent: #14857a;
+  --sl-color-accent-high: #b8ece4;
+  --sl-font: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --sl-content-width: 52rem;
+}
+:root[data-theme='light'] {
+  --sl-color-accent-low: #d4f3ee;
+  --sl-color-accent: #0f6f66;
+  --sl-color-accent-high: #0b3d38;
+}
+
+/* Requirement keywords (BCP 14), as in RFCs: easy to spot when scanning for obligations. */
+.sl-markdown-content .bcp14 {
+  font-weight: 650;
+  font-size: 0.92em;
+  letter-spacing: 0.02em;
+  color: var(--sl-color-accent-high);
+}
+
+/* Wide spec tables scroll instead of squashing. */
+.sl-markdown-content table { display: block; overflow-x: auto; font-size: var(--sl-text-sm); }
+.sl-markdown-content th { white-space: nowrap; }
+.sl-markdown-content td code { white-space: nowrap; }
+
+/* Notes and editorial notes written as blockquotes in the source markdown. */
+.sl-markdown-content blockquote {
+  border-inline-start: 3px solid var(--sl-color-accent);
+  background: var(--sl-color-accent-low);
+  padding: 0.75rem 1rem;
+  border-radius: 0 6px 6px 0;
+  font-style: normal;
+}
+
+pre.mermaid { background: transparent; border: 1px solid var(--sl-color-gray-5); border-radius: 6px; padding: 1rem; text-align: center; }

@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.astro/
+.sources/
+.wrangler/
+# generated from the source repositories by scripts/sync-docs.mjs
+src/content/docs/docs/veridact/
+src/content/docs/docs/valet/
+src/content/docs/docs/guides/run-valet.md
+src/content/docs/docs/guides/keycloak-extension.md
+src/content/docs/docs/guides/deploy-valet-azure.md
+public/docs/

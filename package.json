@@ -1,0 +1,25 @@
+{
+  "name": "veridact.net",
+  "version": "1.0.0",
+  "description": "veridact.net: the Valet site and the Veridact docs, deployed to Cloudflare",
+  "scripts": {
+    "sync": "node scripts/sync-docs.mjs",
+    "dev": "npm run sync && astro dev",
+    "build": "node scripts/check-site.mjs && npm run sync && astro build",
+    "preview": "astro preview",
+    "deploy": "npm run build && wrangler deploy"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@astrojs/markdown-remark": "^7.3.10",
+    "@astrojs/starlight": "^0.43.1",
+    "astro": "^7.4.13",
+    "mermaid": "^12.3.0"
+  },
+  "devDependencies": {
+    "unist-util-visit": "^5.2.0",
+    "wrangler": "^4.166.0"
+  },
+  "private": true,
+  "type": "module"
+}

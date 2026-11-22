@@ -1,0 +1,59 @@
+---
+// Page title with a "Copy page" button (copies the page as markdown) and the source it was built from,
+// in the style of the Personal Agent Protocol docs.
+const PAGE_TITLE_ID = '_top';
+const { entry, id } = Astro.locals.starlightRoute;
+const { title, sourceRepo, sourceCommit, editUrl } = entry.data as any;
+const rawUrl = `/${id.replace(/\/$/, '')}.md`;
+const sourceUrl = sourceRepo && typeof editUrl === "string" ? String(editUrl).replace('/edit/', '/blob/') : null;
+---
+
+<div class="vd-title">
+  <h1 id={PAGE_TITLE_ID}>{title}</h1>
+  <div class="vd-actions not-content">
+    <button type="button" class="vd-copy" data-raw={rawUrl} aria-live="polite">Copy page</button>
+    <a class="vd-raw" href={rawUrl}>Markdown</a>
+  </div>
+</div>
+{sourceUrl && (
+  <p class="vd-source not-content">
+    Built from <a href={sourceUrl}>{sourceRepo}</a>{sourceCommit && sourceCommit !== 'local' && <> at <code>{sourceCommit}</code></>}
+  </p>
+)}
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.vd-copy').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      try {
+        const res = await fetch(btn.dataset.raw!);
+        await navigator.clipboard.writeText(await res.text());
+        btn.textContent = 'Copied';
+      } catch {
+        btn.textContent = 'Copy failed';
+      }
+      setTimeout(() => (btn.textContent = 'Copy page'), 2000);
+    });
+  });
+
+  if (document.querySelector('pre.mermaid')) {
+    import('mermaid').then(({ default: mermaid }) => {
+      const dark = document.documentElement.dataset.theme === 'dark';
+      mermaid.initialize({ startOnLoad: false, theme: dark ? 'dark' : 'neutral', securityLevel: 'strict' });
+      mermaid.run({ querySelector: 'pre.mermaid' });
+    });
+  }
+</script>
+
+<style>
+  .vd-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  h1 { margin-top: 1rem; font-size: var(--sl-text-h1); line-height: var(--sl-line-height-headings); font-weight: 600; color: var(--sl-color-white); }
+  .vd-actions { display: flex; gap: 0.5rem; margin-top: 1.4rem; }
+  .vd-copy, .vd-raw {
+    font: inherit; font-size: var(--sl-text-sm); padding: 0.3rem 0.75rem; border-radius: 6px;
+    border: 1px solid var(--sl-color-gray-5); background: var(--sl-color-bg); color: var(--sl-color-gray-2);
+    cursor: pointer; text-decoration: none; white-space: nowrap;
+  }
+  .vd-copy:hover, .vd-raw:hover { border-color: var(--sl-color-accent); color: var(--sl-color-white); }
+  .vd-source { margin-top: 0.25rem; font-size: var(--sl-text-xs); color: var(--sl-color-gray-3); }
+  .vd-source a { color: inherit; }
+</style>

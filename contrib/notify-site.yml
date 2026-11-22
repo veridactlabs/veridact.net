@@ -1,0 +1,21 @@
+# Optional. Copy to .github/workflows/notify-site.yml in veridactlabs/veridact and veridactlabs/veridact-valet,
+# so a change to their docs republishes veridact.net within minutes instead of at the daily rebuild.
+# Needs a repository secret SITE_DISPATCH_TOKEN: a fine-grained token with "Contents: read and write"
+# on veridactlabs/veridact.net only.
+name: Republish docs on veridact.net
+
+on:
+  push:
+    branches: [main]
+    paths: ['docs/**', 'README.md', 'extensions/**/README.md', 'deploy/**/README.md']
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsS -X POST \
+            -H "Authorization: Bearer ${{ secrets.SITE_DISPATCH_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/veridactlabs/veridact.net/dispatches \
+            -d '{"event_type":"docs-updated"}'
