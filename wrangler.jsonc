@@ -10,6 +10,9 @@
   },
   // All of veridact.net is served by this Worker. The proxied DNS records still point at the old Hetzner
   // host; removing these routes falls back to it.
+  // Workers Builds runs `wrangler preview` for branches and pull requests; it needs this block.
+  // Previews get their own workers.dev URL and never take over the routes below.
+  "previews": {},
   "routes": [
     { "pattern": "veridact.net/*", "zone_name": "veridact.net" },
     { "pattern": "www.veridact.net/*", "zone_name": "veridact.net" }
