@@ -14,7 +14,7 @@ Passwords and API keys answer none of them. Two open projects do.
 | | Veridact | Veridact Valet |
 |---|---|---|
 | Answers | Questions 1 and 2: *which agent is this, who answers for it, and is it still trusted?* | Question 3: *what did the customer allow?* |
-| What it is | An open specification for short-lived agent credentials, issued the way Let's Encrypt issues certificates, plus a reference verifier, issuer and agent client | An open permission profile for agent access to accounts, plus a reference implementation a bank deploys and runs itself |
+| What it is | An open specification for verifiable AI agent identity: an HTTPS identifier that is also the agent's OAuth `client_id`, and short-lived SD-JWT credentials that a bank or insurer verifies inside its own systems. Plus a reference verifier, issuer and agent client | An open permission profile for agent access to accounts, plus a reference implementation a bank deploys and runs itself |
 | Built on | SD-JWT VC, Token Status List, Client ID Metadata Documents, ACME (RFC 8555) | OAuth 2.0 Rich Authorization Requests, FAPI 2.0, DPoP, CIBA |
 | Read first | [Specification](/docs/veridact/spec/) | [Overview](/docs/valet/overview/), then [Where Valet fits](/docs/valet/where-valet-fits/) |
 
@@ -39,7 +39,7 @@ Valet documents mark each feature **Built** (in the proof of concept and covered
 
 Both projects are drafts for review, with working proofs of concept. Nothing here is accredited or conformance-tested for production yet.
 
-- **Veridact**: specification v0.5 (draft). The reference code is moving to v0.5 package by package. The issuer, vbot, sidecar and sandbox run as an alpha staging network.
+- **Veridact**: specification v0.5 (draft). The reference verifier, issuer, agent client (vbot), sidecar, sandbox and known-assistant attester implement v0.5 and run as an alpha staging network.
 - **Veridact Valet**: profile `valet-profile/0.8`, implemented by the proof of concept and its conformance tests.
 
 Marula Bank, Kaya and Thandi, who appear in the Valet examples, are fictional, as are all account numbers.
