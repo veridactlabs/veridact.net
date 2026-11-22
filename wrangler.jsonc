@@ -8,10 +8,5 @@
     "not_found_handling": "404-page",
     "html_handling": "auto-trailing-slash"
   }
-  // Step 5 of the README cutover adds the custom domains. Leave this commented out until then,
-  // so the first deploys only go to veridact-net.<your-subdomain>.workers.dev for checking.
-  // ,"routes": [
-  //   { "pattern": "veridact.net", "custom_domain": true },
-  //   { "pattern": "www.veridact.net", "custom_domain": true }
-  // ]
+  // Routes are added at cutover, after checking the site at veridact-net.<subdomain>.workers.dev.
 }

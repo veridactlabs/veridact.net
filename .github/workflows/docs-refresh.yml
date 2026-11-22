@@ -1,0 +1,28 @@
+name: Refresh docs
+
+# The docs are built from veridactlabs/veridact and veridactlabs/veridact-valet. When either main branch moves,
+# this records the new commits in docs-sources.json and pushes, and that push makes Cloudflare rebuild the site.
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record the source commits
+        run: |
+          veridact=$(git ls-remote https://github.com/veridactlabs/veridact.git refs/heads/main | cut -f1)
+          valet=$(git ls-remote https://github.com/veridactlabs/veridact-valet.git refs/heads/main | cut -f1)
+          printf '{\n  "veridactlabs/veridact": "%s",\n  "veridactlabs/veridact-valet": "%s"\n}\n' "$veridact" "$valet" > docs-sources.json
+      - name: Push if they changed
+        run: |
+          if git diff --quiet; then echo "Docs sources unchanged"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Refresh docs from source repositories"
+          git push
