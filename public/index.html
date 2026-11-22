@@ -1,0 +1,1009 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Veridact: identity and mandates for AI agents</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Veridact tells banks and insurers which AI agent is calling and who answers for it. Valet lets the customer decide what it may do, enforced on every request. Open source, runs in your own environment. Built in South Africa.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@500;600;700;800&display=swap">
+<style>
+/* Layout: Veridact's institutional grid (1160px), white and mist sections with two navy bands.
+   The signature object is the mandate: a permission slip with a perforated edge, used in the hero and the use cases.
+   Blue = action and brand; green = allowed; amber = needs the customer; red = never. */
+:root{
+  --bg:#FFFFFF; --bg-alt:#F5F7FB; --surface:#FFFFFF; --ink:#0A1630; --ink-2:#2B3754; --muted:#5B6782;
+  --line:#E3E8F1; --line-strong:#CBD3E2;
+  --blue:#2457F5; --blue-ink:#1A45D1; --blue-soft:#EAF0FE;
+  --navy:#0A1630; --navy-2:#13234A; --on-navy:#EEF2FA; --on-navy-muted:#A9B6D3; --navy-line:#24376A;
+  --green:#0E8A60; --green-soft:#E3F5EE; --amber:#A4560B; --amber-soft:#FBF0E2; --red:#BF3F2B; --red-soft:#FBEAE6;
+  --paper:#FFFDF8; --paper-line:#E9E2D2;
+  --shadow:0 1px 2px rgba(10,22,48,.06),0 12px 32px rgba(10,22,48,.08);
+  --font-display:"Schibsted Grotesk","Segoe UI",system-ui,sans-serif;
+  --font-body:"Hanken Grotesk","Segoe UI",system-ui,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#070E1F; --bg-alt:#0B1530; --surface:#101C3A; --ink:#EAF0FA; --ink-2:#C9D3E8; --muted:#97A5C4; --line:#1F2E55; --line-strong:#2C3E6E;
+  --blue:#6F94FF; --blue-ink:#9AB4FF; --blue-soft:#15244D; --navy:#050B19; --navy-2:#0E1A38; --on-navy:#EEF2FA; --on-navy-muted:#A9B6D3; --navy-line:#22335F;
+  --green:#3CC48F; --green-soft:#0F2E26; --amber:#F0B25E; --amber-soft:#33250F; --red:#F08A76; --red-soft:#3A1C17;
+  --paper:#111D3B; --paper-line:#2A3B66;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 12px 32px rgba(0,0,0,.32); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#070E1F; --bg-alt:#0B1530; --surface:#101C3A; --ink:#EAF0FA; --ink-2:#C9D3E8; --muted:#97A5C4; --line:#1F2E55; --line-strong:#2C3E6E;
+  --blue:#6F94FF; --blue-ink:#9AB4FF; --blue-soft:#15244D; --navy:#050B19; --navy-2:#0E1A38; --on-navy:#EEF2FA; --on-navy-muted:#A9B6D3; --navy-line:#22335F;
+  --green:#3CC48F; --green-soft:#0F2E26; --amber:#F0B25E; --amber-soft:#33250F; --red:#F08A76; --red-soft:#3A1C17;
+  --paper:#111D3B; --paper-line:#2A3B66;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 12px 32px rgba(0,0,0,.32); color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--bg)}
+.band{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.inner{max-width:1160px;margin:0 auto}
+section.band{padding-block:96px}
+.alt{background:var(--bg-alt)}
+.dark{background:var(--navy);color:var(--on-navy)}
+h1,h2,h3,h4{font-family:var(--font-display);margin:0;line-height:1.12;letter-spacing:-.015em;text-wrap:balance}
+h1{font-size:clamp(2.3rem,1.5rem + 3.3vw,3.9rem);font-weight:800}
+h2{font-size:clamp(1.8rem,1.3rem + 1.8vw,2.6rem);font-weight:700}
+h3{font-size:1.18rem;font-weight:650}
+p{margin:0}
+a{color:var(--blue-ink);text-underline-offset:3px}
+.dark a{color:#9AB4FF}
+.eyebrow{font-family:var(--font-display);font-weight:600;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--blue)}
+.dark .eyebrow{color:#8FAEFF}
+.lede{font-size:1.18rem;line-height:1.55;color:var(--ink-2);max-width:62ch}
+.dark .lede{color:var(--on-navy-muted)}
+.muted{color:var(--muted)}
+.mono{font-family:var(--font-mono);font-size:.86em}
+.sechead{display:flex;flex-direction:column;gap:14px;max-width:780px;margin-bottom:48px}
+.btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 22px;border-radius:10px;font-family:var(--font-display);font-weight:600;font-size:.98rem;background:var(--blue);color:#fff;line-height:1.2;text-decoration:none}
+.btn:hover{background:var(--blue-ink)}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line-strong)}
+.btn.ghost:hover{background:var(--bg-alt)}
+.btn[disabled]{opacity:.5;cursor:default}
+:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+
+/* nav */
+header.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line)}
+header.nav .inner{display:flex;align-items:center;gap:28px;height:68px}
+.logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:1.22rem;letter-spacing:-.02em;color:var(--ink);text-decoration:none;white-space:nowrap}
+.logo svg{width:30px;height:30px;flex:none}
+.logo small{font-weight:500;color:var(--muted);font-size:.95rem}
+header.nav nav{display:flex;gap:24px;margin-left:auto;font-size:.95rem}
+header.nav nav a{color:var(--ink-2);text-decoration:none;font-weight:500}
+header.nav nav a:hover{color:var(--blue)}
+header.nav .btn{padding:10px 16px;font-size:.9rem;white-space:nowrap}
+@media (max-width:920px){header.nav nav{display:none}header.nav .btn{margin-left:auto}}
+@media (max-width:420px){.logo small{display:none}}
+
+/* hero */
+.hero{padding-block:64px 80px;background:radial-gradient(900px 480px at 88% 8%,var(--blue-soft),transparent 70%),var(--bg)}
+.hero .inner{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:56px;align-items:center}
+.hero .copy{display:flex;flex-direction:column;gap:22px;min-width:0}
+.hero h1 em{font-style:normal;color:var(--blue)}
+.cta-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+.assure{display:flex;gap:10px 18px;flex-wrap:wrap;font-size:.9rem;color:var(--muted);margin-top:6px}
+.assure span{display:inline-flex;align-items:center;gap:7px}
+.assure svg{width:16px;height:16px;color:var(--green);flex:none}
+@media (max-width:920px){.hero .inner{grid-template-columns:1fr;gap:40px}}
+
+/* the mandate: a permission slip */
+.mandate{position:relative;background:var(--paper);border:1px solid var(--paper-line);border-radius:14px;box-shadow:var(--shadow);padding:22px 22px 18px;min-width:0}
+.mandate::after{content:"";position:absolute;left:18px;right:18px;top:62px;border-top:2px dashed var(--paper-line)}
+.m-head{display:flex;align-items:center;gap:12px;height:40px}
+.m-av{width:38px;height:38px;border-radius:10px;background:#5B3FD6;color:#fff;display:grid;place-items:center;font-family:var(--font-display);font-weight:700;flex:none}
+.m-who{min-width:0;line-height:1.25}
+.m-who b{font-family:var(--font-display);font-size:1rem}
+.m-who div{font-size:.82rem;color:var(--muted)}
+.m-ver{margin-left:auto;font-size:.74rem;font-weight:600;color:var(--green);background:var(--green-soft);border-radius:999px;padding:4px 10px;white-space:nowrap}
+.m-body{display:grid;gap:12px;margin-top:22px}
+.m-title{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rule{display:grid;grid-template-columns:20px minmax(0,1fr);gap:10px;font-size:.93rem;align-items:start}
+.rule svg{width:18px;height:18px;margin-top:3px}
+.rule.may svg{color:var(--green)}.rule.ask svg{color:var(--amber)}.rule.never svg{color:var(--red)}
+.rule b{font-weight:600}
+.m-foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 12px;margin-top:16px;padding-top:12px;border-top:1px solid var(--paper-line);font-family:var(--font-mono);font-size:.72rem;color:var(--muted)}
+.log{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.log-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 14px;border-top:1px solid var(--line);font-size:.86rem}
+.log-row:first-child{border-top:0}
+.log-row time{font-family:var(--font-mono);font-size:.76rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.pill{font-size:.72rem;font-weight:600;border-radius:999px;padding:3px 9px;white-space:nowrap}
+.pill.ok{color:var(--green);background:var(--green-soft)}.pill.ask{color:var(--amber);background:var(--amber-soft)}.pill.no{color:var(--red);background:var(--red-soft)}
+.caption{font-size:.8rem;color:var(--muted);margin-top:10px}
+
+/* film */
+.film .inner{display:flex;flex-direction:column;gap:30px;align-items:center;text-align:center}
+.film .sechead{align-items:center;margin-bottom:0}
+.player{width:100%;max-width:1040px;border-radius:18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45);border:1px solid var(--navy-line);background:#000;aspect-ratio:16/9}
+.player video{display:block;width:100%;height:100%;max-width:100%}
+.film .note{font-size:.9rem;color:var(--on-navy-muted);margin-top:0}
+
+/* problem */
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+@media (max-width:980px){.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}.grid3{grid-template-columns:1fr}}
+@media (max-width:640px){.grid4,.grid2{grid-template-columns:1fr}}
+.flaw{display:flex;flex-direction:column;gap:8px;padding:22px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.flaw .k{font-family:var(--font-mono);font-size:.74rem;color:var(--red);letter-spacing:.06em;text-transform:uppercase}
+.flaw p{color:var(--ink-2);font-size:.96rem}
+.voices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:56px}
+@media (max-width:980px){.voices{grid-template-columns:1fr}}
+figure.voice{margin:0;display:flex;flex-direction:column;gap:14px;padding:26px;border-radius:14px;background:var(--bg-alt);border:1px solid var(--line)}
+.alt figure.voice{background:var(--surface)}
+figure.voice blockquote{margin:0;font-family:var(--font-display);font-size:1.22rem;font-weight:600;line-height:1.32;letter-spacing:-.01em}
+figure.voice blockquote::before{content:"\201C"}figure.voice blockquote::after{content:"\201D"}
+figure.voice figcaption{font-size:.88rem;color:var(--muted);line-height:1.45}
+figure.voice figcaption b{color:var(--ink-2);font-weight:600}
+.fact{display:flex;flex-direction:column;gap:10px;padding:26px;border-radius:14px;border:1px solid var(--line);background:var(--surface)}
+.fact .big{font-family:var(--font-display);font-size:1.22rem;font-weight:650;line-height:1.3}
+.note{font-size:.82rem;color:var(--muted);margin-top:18px}
+
+/* two questions */
+.twoq{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+@media (max-width:760px){.twoq{grid-template-columns:1fr}}
+.q{padding:30px;border-radius:16px;border:1px solid var(--navy-line);background:var(--navy-2);display:flex;flex-direction:column;gap:12px}
+.q .who{font-family:var(--font-mono);font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;color:var(--on-navy-muted)}
+.q h3{font-size:1.5rem;color:var(--on-navy)}
+.q p{color:var(--on-navy-muted)}
+.q.ours{border-color:#4E72F0;box-shadow:inset 0 0 0 1px #4E72F0}
+
+/* comparison */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+table.cmp{width:100%;border-collapse:collapse;min-width:680px;font-size:.95rem}
+.cmp th,.cmp td{padding:14px 18px;text-align:left;border-top:1px solid var(--line);vertical-align:top}
+.cmp thead th{border-top:0;font-family:var(--font-display);font-size:.92rem;background:var(--bg-alt)}
+.cmp thead th.us{color:var(--blue)}
+.cmp td.us{background:color-mix(in srgb,var(--blue-soft) 55%,transparent)}
+.mark{display:inline-flex;align-items:center;gap:7px;font-size:.88rem}
+.mark svg{width:16px;height:16px;flex:none}
+.y{color:var(--green)}.n{color:var(--red)}.p{color:var(--amber)}
+.why3{margin-top:48px}
+.why{display:flex;flex-direction:column;gap:10px}
+.why .n2{font-family:var(--font-mono);font-size:.78rem;color:var(--blue)}
+.why p{color:var(--ink-2)}
+
+/* how it works */
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;counter-reset:s}
+@media (max-width:980px){.steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:600px){.steps{grid-template-columns:1fr}}
+.step{position:relative;padding:24px;border-radius:14px;border:1px solid var(--line);background:var(--surface);display:flex;flex-direction:column;gap:10px}
+.step .num{font-family:var(--font-mono);font-size:.8rem;color:var(--blue)}
+.step p{color:var(--ink-2);font-size:.95rem}
+.step .eg{font-size:.86rem;color:var(--muted);border-top:1px dashed var(--line-strong);padding-top:10px;margin-top:auto}
+.receipt{margin-top:28px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:32px;align-items:center;padding:28px;border-radius:16px;background:var(--bg-alt);border:1px solid var(--line)}
+.alt .receipt{background:var(--surface)}
+@media (max-width:820px){.receipt{grid-template-columns:1fr}}
+pre.rc{margin:0;overflow-x:auto;font-family:var(--font-mono);font-size:.78rem;line-height:1.6;background:var(--navy);color:var(--on-navy);padding:18px;border-radius:12px}
+pre.rc .c{color:var(--on-navy-muted)}pre.rc .g{color:#5FD3A4}
+
+/* principles */
+.principles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px 24px}
+@media (max-width:1060px){.principles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:700px){.principles{grid-template-columns:1fr}}
+.pr{display:flex;flex-direction:column;gap:8px;padding-top:16px;border-top:2px solid var(--blue)}
+.pr p{font-size:.94rem;color:var(--ink-2)}
+
+/* use cases */
+.uc-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.uc-tab{all:unset;cursor:pointer;padding:10px 16px;border-radius:999px;font-family:var(--font-display);font-weight:600;font-size:.92rem;color:var(--ink-2);box-shadow:inset 0 0 0 1px var(--line-strong);background:var(--surface)}
+.uc-tab[aria-selected="true"]{background:var(--ink);color:var(--bg);box-shadow:none}
+.uc{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:40px;align-items:start}
+@media (max-width:900px){.uc{grid-template-columns:1fr}}
+.uc .copy{display:flex;flex-direction:column;gap:16px}
+.uc .copy p{color:var(--ink-2)}
+.uc .copy ul{margin:0;padding-left:20px;color:var(--ink-2);display:grid;gap:6px}
+
+/* split of responsibilities */
+.split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+@media (max-width:760px){.split{grid-template-columns:1fr}}
+.col{padding:28px;border-radius:16px;border:1px solid var(--line);background:var(--surface)}
+.col h3{margin-bottom:14px}
+.col ul{margin:0;padding:0;list-style:none;display:grid;gap:12px}
+.col li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:10px;color:var(--ink-2);font-size:.96rem}
+.col li svg{width:18px;height:18px;margin-top:3px;color:var(--blue)}
+.col.yours li svg{color:var(--green)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{font-family:var(--font-mono);font-size:.78rem;padding:5px 10px;border-radius:8px;background:var(--bg-alt);border:1px solid var(--line);color:var(--ink-2)}
+a.chip{text-decoration:none;color:var(--blue)}a.chip:hover{border-color:var(--blue)}
+.platforms{margin-top:40px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}
+@media (max-width:760px){.platforms{grid-template-columns:1fr}}
+
+/* status */
+.status{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+@media (max-width:900px){.status{grid-template-columns:1fr}}
+.st{padding:24px;border-radius:14px;border:1px solid var(--line);background:var(--surface);display:flex;flex-direction:column;gap:10px}
+.st .tag{align-self:flex-start;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:4px 10px}
+.st.done .tag{color:var(--green);background:var(--green-soft)}.st.now .tag{color:var(--blue);background:var(--blue-soft)}.st.next .tag{color:var(--muted);background:var(--bg-alt)}
+.st ul{margin:0;padding-left:18px;color:var(--ink-2);font-size:.94rem;display:grid;gap:4px}
+
+/* form */
+.talk .inner{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:56px;align-items:start}
+@media (max-width:960px){.talk .inner{grid-template-columns:1fr;gap:36px}}
+.talk .copy{display:flex;flex-direction:column;gap:18px}
+.talk .copy ul{margin:0;padding-left:20px;color:var(--on-navy-muted);display:grid;gap:8px}
+form.disc{background:var(--surface);color:var(--ink);border-radius:18px;padding:28px;display:grid;gap:18px;box-shadow:0 20px 50px rgba(0,0,0,.25);min-width:0}
+.row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:560px){.row2{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label,.field legend{font-weight:600;font-size:.92rem;color:var(--ink)}
+.field .hint{font-size:.82rem;color:var(--muted);font-weight:400}
+input[type=text],input[type=email],select,textarea{font:inherit;font-size:.96rem;color:var(--ink);background:var(--bg);border:1px solid var(--line-strong);border-radius:10px;padding:11px 12px;width:100%}
+textarea{min-height:96px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--blue);outline-offset:1px;border-color:transparent}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+.opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.opt{position:relative}
+.opt input{position:absolute;opacity:0;pointer-events:none}
+.opt span{display:inline-block;padding:8px 13px;border-radius:999px;border:1px solid var(--line-strong);font-size:.88rem;cursor:pointer;color:var(--ink-2);background:var(--bg)}
+.opt input:checked+span{background:var(--blue);border-color:var(--blue);color:#fff}
+.opt input:focus-visible+span{outline:2px solid var(--blue);outline-offset:2px}
+.consent{display:grid;grid-template-columns:20px minmax(0,1fr);gap:10px;font-size:.86rem;color:var(--muted);align-items:start}
+.consent input{width:18px;height:18px;margin-top:2px}
+.form-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.form-msg{font-size:.9rem}
+.form-msg.err{color:var(--red)}
+.done-panel{display:grid;gap:14px}
+.done-panel h3{font-size:1.4rem}
+.done-panel pre{white-space:pre-wrap;word-break:break-word;background:var(--bg-alt);border:1px solid var(--line);border-radius:10px;padding:14px;font-family:var(--font-mono);font-size:.8rem;margin:0;max-height:260px;overflow:auto}
+
+/* faq */
+.faq{display:grid;gap:12px;max-width:860px}
+details{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:0 20px}
+summary{cursor:pointer;list-style:none;padding:18px 0;font-family:var(--font-display);font-weight:600;font-size:1.04rem;display:flex;justify-content:space-between;gap:16px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--blue);font-weight:700}
+details[open] summary::after{content:"\2212"}
+details p{padding:0 0 18px;color:var(--ink-2)}
+
+/* footer */
+footer.band{padding-block:48px;border-top:1px solid var(--line)}
+footer .inner{display:flex;flex-direction:column;gap:18px}
+.foot-top{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:center}
+.foot-links{display:flex;gap:20px;flex-wrap:wrap;font-size:.92rem}
+.foot-links a{color:var(--ink-2);text-decoration:none}
+.small{font-size:.8rem;color:var(--muted);line-height:1.55;max-width:90ch}
+.sources{font-size:.8rem;color:var(--muted);display:grid;gap:4px}
+.films{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px;width:100%;max-width:1160px;text-align:left}
+@media (max-width:900px){.films{grid-template-columns:1fr}}
+.films figure{margin:0;display:flex;flex-direction:column;gap:14px}
+.films figcaption{display:flex;flex-direction:column;gap:4px}
+.films figcaption b{font-family:var(--font-display);font-size:1.15rem;color:#fff}
+.films figcaption span{font-size:.92rem;color:var(--on-navy-muted)}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:40px}
+@media (max-width:900px){.stats{grid-template-columns:1fr}}
+.stat{padding:26px;border-radius:14px;border:1px solid var(--line);background:var(--surface);display:flex;flex-direction:column;gap:8px}
+.stat .n{font-family:var(--font-display);font-weight:800;font-size:2.6rem;line-height:1;color:var(--blue)}
+.stat .src{font-size:.8rem;color:var(--muted)}
+.q .more{margin-top:auto;font-weight:600;color:#9AB4FF;text-decoration:none}
+.prod{display:inline-flex;align-items:center;gap:10px;font-family:var(--font-mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:4px}
+.prod::before{content:"";width:24px;height:2px;background:var(--blue)}
+.https{display:flex;gap:28px;align-items:flex-end;margin-top:8px}
+.https div{display:flex;flex-direction:column;gap:6px;font-size:.85rem;color:var(--muted)}
+.https b{font-family:var(--font-display);font-size:2.2rem;line-height:1;color:var(--ink)}
+.https .now b{color:var(--blue)}
+.faq h3{margin:18px 0 4px;font-size:1rem;font-family:var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--blue)}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 20 20"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5l3.5 3.5 7.5-8"/></symbol>
+  <symbol id="i-ask" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="2"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M10 6v4.5l2.5 1.5"/></symbol>
+  <symbol id="i-never" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="2"/><path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M5 15L15 5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 20 20"><path stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></symbol>
+  <symbol id="i-part" viewBox="0 0 20 20"><path stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M5 10h10"/></symbol>
+  <symbol id="i-dot" viewBox="0 0 20 20"><circle cx="10" cy="10" r="3.5" fill="currentColor"/></symbol>
+</svg>
+
+<header class="nav band">
+  <div class="inner">
+    <a class="logo" href="#top" aria-label="Veridact, home">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#2457F5"/><path d="M9 16.5l4.5 4.5L23 11" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Veridact
+    </a>
+    <nav aria-label="Sections">
+      <a href="#film">Films</a>
+      <a href="#identity">Veridact</a>
+      <a href="#valet">Valet</a>
+      <a href="#how">How it works</a>
+      <a href="#purpose">Purpose</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://github.com/veridactlabs" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+    <a class="btn" href="#talk">Start a conversation</a>
+  </div>
+</header>
+
+<main id="top">
+<!-- HERO -->
+<section class="hero band">
+  <div class="inner">
+    <div class="copy">
+      <span class="eyebrow">Open infrastructure for AI agents</span>
+      <h1>Know which agent is calling. <em>Control what it may do.</em></h1>
+ <p class="lede">AI agents are arriving at banks and insurers on their customers' behalf, often with a borrowed password. <b>Veridact</b> tells you which agent is calling and which organisation answers for it. <b>Valet</b> lets the customer decide what it may do, and your systems enforce that on every request. Both are open source and run inside your own environment.</p>
+      <div class="cta-row">
+        <a class="btn" href="#talk">Tell us what you're seeing</a>
+        <a class="btn ghost" href="#film">Watch the films</a>
+      </div>
+      <div class="assure">
+        <span><svg><use href="#i-check"/></svg>Open source</span>
+        <span><svg><use href="#i-check"/></svg>Runs in your environment</span>
+        <span><svg><use href="#i-check"/></svg>Built on open standards</span>
+        <span><svg><use href="#i-check"/></svg>Built in South Africa</span>
+      </div>
+    </div>
+
+    <div class="shot" aria-label="Example of a Valet mandate and its activity">
+      <div class="mandate">
+        <div class="m-head">
+          <span class="m-av" aria-hidden="true">K</span>
+          <div class="m-who"><b>Kaya</b><div>operated by Kaya Labs (Pty) Ltd</div></div>
+          <span class="m-ver">✓ Verified by Veridact</span>
+        </div>
+        <div class="m-body">
+          <div class="m-title">Thandi's mandate · Marula Bank</div>
+          <div class="rule may"><svg><use href="#i-check"/></svg><span><b>May</b> pay existing beneficiaries from Cheque ••4821, up to <span class="mono">R2,000.00</span> a month</span></div>
+          <div class="rule ask"><svg><use href="#i-ask"/></svg><span><b>Asks Thandi first</b> for anyone new, or anything over the limit</span></div>
+          <div class="rule never"><svg><use href="#i-never"/></svg><span><b>Never</b> adds beneficiaries, changes limits or sees her password</span></div>
+        </div>
+        <div class="m-foot"><span>Expires 25 Jan 2027</span><span>Stop any time in the bank app</span></div>
+      </div>
+      <div class="log" role="list">
+        <div class="log-row" role="listitem"><time>09:14</time><span>Paid Water &amp; Sanitation <span class="mono">R640.00</span></span><span class="pill ok">Within mandate</span></div>
+        <div class="log-row" role="listitem"><time>09:20</time><span>City Power <span class="mono">R1,250.00</span>, new recipient</span><span class="pill ask">Thandi approved</span></div>
+        <div class="log-row" role="listitem"><time>09:31</time><span>Add beneficiary "QuickLoans"</span><span class="pill no">Refused</span></div>
+      </div>
+      <p class="caption">Illustration with fictional names. Veridact vouches for Kaya; Valet holds Thandi's mandate. Every line above is a signed receipt held by the bank.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FILMS -->
+<section class="band dark film" id="film" aria-labelledby="film-h">
+  <div class="inner">
+    <div class="sechead"><span class="eyebrow">The films</span><h2 id="film-h" style="color:#fff">Two questions, two minutes each</h2><p class="lede">One film for each question every organisation has to answer when an AI agent knocks.</p></div>
+    <div class="films">
+      <figure>
+        <div class="player"><video controls preload="metadata" playsinline poster="media/poster.jpg"><source src="media/veridact-explainer-v2.mp4" type="video/mp4">Your browser cannot play this video.</video></div>
+        <figcaption><b>Veridact: which agent is this?</b><span>The six steps that take an AI agent from unknown to trusted.</span></figcaption>
+      </figure>
+      <figure>
+        <div class="player"><video controls preload="metadata" playsinline poster="valet/media/valet-poster.jpg"><source src="valet/media/valet-explainer.mp4" type="video/mp4">Your browser cannot play this video.</video></div>
+        <figcaption><b>Valet: what may it do?</b><span>Why a shared login is the wrong key, and how a mandate replaces it.</span></figcaption>
+      </figure>
+    </div>
+    <p class="note">Captions are shown on screen. InsureCo, Thandi, Kaya, Marula Bank, Claimly and Homebase are fictional.</p>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="band alt" id="problem">
+  <div class="inner">
+    <div class="sechead">
+      <span class="eyebrow">The problem</span>
+      <h2>Agents act. The systems they act on were built for people.</h2>
+      <p class="lede">An AI agent differs from a chatbot in one way that matters: it does things. When the only way in is the customer's own login, every organisation it touches inherits four problems at once.</p>
+    </div>
+    <div class="grid4">
+      <div class="flaw"><span class="k">All or nothing</span><h3>No limits</h3><p>With a password the agent can do anything the customer can: pay anyone, change details, cancel cover.</p></div>
+      <div class="flaw"><span class="k">Invisible</span><h3>No way to tell who acted</h3><p>Your systems see the customer, not the agent. Fraud models and audit trails cannot separate the two.</p></div>
+      <div class="flaw"><span class="k">Unstoppable</span><h3>No off switch</h3><p>The only way to stop an agent is a password change, which breaks every other channel the customer uses.</p></div>
+      <div class="flaw"><span class="k">Unaccountable</span><h3>No evidence</h3><p>After a loss nobody can prove what the customer actually allowed, so the dispute lands on whoever is easiest to blame.</p></div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><span class="n">80%</span><p>of financial institutions have already encountered attacks using agentic AI.</p><span class="src">BioCatch, 2026 Future of Digital Trust</span></div>
+      <div class="stat"><span class="n">72%</span><p>expect it to be very hard to tell legitimate AI-assisted actions from malicious ones.</p><span class="src">BioCatch, 2026 · 1,440 respondents, 25 countries</span></div>
+      <div class="stat"><span class="n">R2.4bn</span><p>lost to digital banking fraud in South Africa in 2025, up 29.2% on 2024.</p><span class="src">SABRIC annual crime statistics 2025</span></div>
+    </div>
+
+    <div class="voices">
+      <figure class="voice">
+        <blockquote>You need a function that validates the agents, validates the transaction, reports it as true.</blockquote>
+        <figcaption><b>Chipo Mushwana</b>, Nedbank executive for payments and technology, speaking at Nedbank's Innovation Day, as reported by <a href="https://techcentral.co.za/how-ai-agents-could-rewrite-the-rules-of-south-african-banking/282406/" target="_blank" rel="noopener">TechCentral</a> (8 June 2026)</figcaption>
+      </figure>
+      <figure class="voice">
+        <blockquote>My concern is the gap between what an agent can reach and what anyone actually approved.</blockquote>
+        <figcaption><b>Rene Mattheus</b>, cybercrime and technology attorney, in his talk <i>Your AI agent spent the money. Who gets the bill?</i> (27 October 2026), published on <a href="https://www.linkedin.com/in/rene-mattheus/" target="_blank" rel="noopener">LinkedIn</a></figcaption>
+      </figure>
+      <div class="fact">
+        <span class="eyebrow">Where South Africa stands</span>
+        <p class="big">South African banks are warning customers not to share logins with AI agents, and some block third-party agents outright.</p>
+        <p class="muted" style="font-size:.9rem">Customers who share credentials may carry the loss. Meanwhile anyone issuing EFT payments on a payer's behalf, screen scrapers included, must now register with the SARB and get informed consent.</p>
+        <p style="font-size:.86rem"><a href="https://techcentral.co.za/sa-banks-warn-customers-logins-ai-agents/287667/" target="_blank" rel="noopener">TechCentral, 26 October 2026</a> · <a href="https://bowmanslaw.com/insights/south-africa-new-requirement-for-issuers-of-electronic-funds-transfer-credit-payment-instructions-on-behalf-of-payers-in-the-national-payment-system-to-register-with-the-south-african-reserve-bank/" target="_blank" rel="noopener">SARB Directive 2 of 2024</a></p>
+      </div>
+    </div>
+    <p class="note">Quotes are reproduced as published or reported, with links to the source. They are not endorsements of Veridact or Valet.</p>
+  </div>
+</section>
+
+<!-- TWO QUESTIONS -->
+<section class="band dark">
+  <div class="inner">
+    <div class="sechead">
+      <span class="eyebrow">Two questions</span>
+      <h2>Every organisation an agent touches has to answer two questions.</h2>
+      <p class="lede">Blocking agents does not make the demand go away; it just pushes customers back to sharing passwords. Saying yes safely means answering both questions, on every request.</p>
+    </div>
+    <div class="twoq">
+      <div class="q"><span class="who">Answered by Veridact</span><h3>Which agent is this?</h3><p>A verified identity for the organisation operating the agent, checked before the customer is ever asked, and blocked at your own door at once and withdrawn across the network within minutes.</p><a class="more" href="#identity">How Veridact works →</a></div>
+      <div class="q ours"><span class="who">Answered by Valet</span><h3>What did this person allow it to do?</h3><p>A written mandate the customer chose, enforced by your systems on every request, with anything outside it sent back to the customer to decide.</p><a class="more" href="#valet">How Valet works →</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- VERIDACT -->
+<section class="band" id="identity">
+  <div class="inner">
+    <div class="sechead">
+      <span class="prod">Veridact · agent identity</span>
+      <h2>Most AI identity tools stop at your own walls. Veridact works between them.</h2>
+      <p class="lede">Nearly every AI identity product solves one organisation's problem: listing and permissioning the agents it builds itself. The agents that matter most to a bank arrive from outside: a customer's assistant, a broker's quoting bot, a partner insurer's claims agent. Your own registry has never heard of them.</p>
+    </div>
+    <div class="split">
+      <div class="col">
+        <span class="eyebrow">Inside one organisation</span>
+        <h3>Agent governance and IAM platforms</h3>
+        <p class="muted">"Which agents do we run, and what may they reach?"</p>
+        <ul>
+          <li><svg><use href="#i-dot"/></svg><span>An inventory of the agents you build</span></li>
+          <li><svg><use href="#i-dot"/></svg><span>Permissions inside your own tenant</span></li>
+          <li><svg><use href="#i-dot"/></svg><span>Trust ends at your boundary; outside agents are anonymous</span></li>
+        </ul>
+      </div>
+      <div class="col yours">
+        <span class="eyebrow">Across organisations</span>
+        <h3>Veridact</h3>
+        <p class="muted">"Whose agent is this, who authorised it, and may it act?"</p>
+        <ul>
+          <li><svg><use href="#i-check"/></svg><span>An operator gets one credential that every member recognises, with no bilateral onboarding</span></li>
+          <li><svg><use href="#i-check"/></svg><span>Authority travels with the agent: who delegated it, its scopes, its limits</span></li>
+          <li><svg><use href="#i-check"/></svg><span>The receiving organisation verifies it locally and keeps every decision</span></li>
+          <li><svg><use href="#i-check"/></svg><span>Works alongside the governance tools you already run</span></li>
+        </ul>
+      </div>
+    </div>
+    <p class="note" style="margin-top:24px">Your IAM governs the agents you own. Veridact identifies the agents you don't.</p>
+  </div>
+</section>
+
+<section class="band alt" id="identity-how">
+  <div class="inner">
+    <div class="sechead">
+      <span class="prod">Veridact · how it works</span>
+      <h2>Six steps from verified organisation to trusted agent.</h2>
+      <p class="lede">The model that made every website verifiable, applied to AI agents. People make the decisions that carry accountability; everything else is automatic.</p>
+    </div>
+    <div class="grid3">
+      <div class="step"><span class="num">1 · System</span><h3>Verify the organisation</h3><p>The operator proves it controls its domain, the way a website earns its padlock, and for higher assurance that it is a registered company.</p></div>
+      <div class="step"><span class="num">2 · Person</span><h3>Delegate to the agent</h3><p>An appointed approver sets what the agent may do and spend, and signs it with a passkey. Two people above R1,000.</p></div>
+      <div class="step"><span class="num">3 · System</span><h3>Issue a short-lived credential</h3><p>The agent receives a verifiable credential that lasts hours, bound to its own key. Every issuance is written to a public log.</p></div>
+      <div class="step"><span class="num">4 · Agent</span><h3>Present it at any member's door</h3><p>Any bank or insurer challenges the agent and verifies the answer inside its own systems. No prior deal with the operator, and no call to Veridact.</p></div>
+      <div class="step"><span class="num">5 · System</span><h3>Check it may act</h3><p>The credential shows what the agent was authorised to do. Anything over its limits goes to a person, and Valet takes over for what the customer allowed.</p></div>
+      <div class="step"><span class="num">6 · System</span><h3>Renew or withdraw</h3><p>Credentials renew automatically. Your own systems can block an agent at once; a withdrawal reaches every member within minutes through a published status list.</p></div>
+    </div>
+    <div class="grid3 why3">
+      <div class="why"><span class="n2">No call home</span><h3>If Veridact goes down, your agents keep working.</h3><p>Verification runs inside each bank on signed, cached files. Members can mirror every published file, and no single operator, including us, can switch the network off.</p></div>
+      <div class="why"><span class="n2">Build or share</span><h3>Keep the decisions in-house. Share the plumbing.</h3><p>Banks already share clearing, ATM networks and crime intelligence, and compete on products. Agent identity belongs in the same category. Your customers, risk decisions and fraud models never leave you.</p></div>
+      <div class="why"><span class="n2">Assurance tiers</span><h3>Free where it can be automated.</h3><p>Domain-level credentials are free and automatic, so a startup's agent is recognised from day one. Organisation checks, where someone has to verify a company and its approvers, are paid.</p></div>
+    </div>
+    <div class="chips" style="margin-top:32px"><span class="chip">IETF ACME</span><span class="chip">SD-JWT verifiable credentials</span><span class="chip">Token Status List</span><span class="chip">OAuth 2.0</span><span class="chip">DPoP</span><span class="chip">Attestation-based client authentication</span></div>
+    <p class="muted" style="font-size:.9rem;margin-top:12px">Veridact never registers or biometrically enrols people. Where an agent acts for a customer, the customer's consent stays with the bank, and that is where Valet comes in.</p>
+  </div>
+</section>
+
+<!-- WHY VALET -->
+<section class="band" id="valet">
+  <div class="inner">
+    <div class="sechead">
+      <span class="prod">Valet · customer mandates</span>
+      <h2>"We already have APIs." They were built for partners, not for agents.</h2>
+      <p class="lede">Partner APIs serve a handful of vetted businesses under contract. AI agents are the opposite: thousands of them, chosen by customers, changing every week. They need a different kind of front door.</p>
+    </div>
+    <div class="tablewrap" role="region" aria-label="Comparison" tabindex="0">
+      <table class="cmp">
+        <thead><tr><th scope="col">What the situation needs</th><th scope="col">Shared login</th><th scope="col">Typical partner API</th><th scope="col" class="us">Valet</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Customer never shares a password</th><td><span class="mark n"><svg><use href="#i-x"/></svg>No</span></td><td><span class="mark y"><svg><use href="#i-check"/></svg>Yes</span></td><td class="us"><span class="mark y"><svg><use href="#i-check"/></svg>Yes</span></td></tr>
+          <tr><th scope="row">Customer sets the limits, per agent</th><td><span class="mark n"><svg><use href="#i-x"/></svg>No</span></td><td><span class="mark p"><svg><use href="#i-part"/></svg>Set by contract, not the customer</span></td><td class="us"><span class="mark y"><svg><use href="#i-check"/></svg>Payees, amounts, how often, how long</span></td></tr>
+          <tr><th scope="row">Knows which agent is acting</th><td><span class="mark n"><svg><use href="#i-x"/></svg>No</span></td><td><span class="mark p"><svg><use href="#i-part"/></svg>Only contracted partners</span></td><td class="us"><span class="mark y"><svg><use href="#i-check"/></svg>Any verified agent</span></td></tr>
+          <tr><th scope="row">Exceptions go to the customer, in your app</th><td><span class="mark n"><svg><use href="#i-x"/></svg>No</span></td><td><span class="mark n"><svg><use href="#i-x"/></svg>Rarely</span></td><td class="us"><span class="mark y"><svg><use href="#i-check"/></svg>One approval, one action</span></td></tr>
+          <tr><th scope="row">Customer can stop it in one tap</th><td><span class="mark n"><svg><use href="#i-x"/></svg>Change the password</span></td><td><span class="mark p"><svg><use href="#i-part"/></svg>Varies</span></td><td class="us"><span class="mark y"><svg><use href="#i-check"/></svg>On the very next request</span></td></tr>
+ <tr><th scope="row">Evidence you can rely on in a dispute</th><td><span class="mark n"><svg><use href="#i-x"/></svg>None</span></td><td><span class="mark p"><svg><use href="#i-part"/></svg>Logs</span></td><td class="us"><span class="mark y"><svg><use href="#i-check"/></svg>Signed, tamper-evident receipts</span></td></tr>
+          <tr><th scope="row">Agent builders integrate once, everywhere</th><td><span class="mark n"><svg><use href="#i-x"/></svg>No</span></td><td><span class="mark n"><svg><use href="#i-x"/></svg>One integration per organisation</span></td><td class="us"><span class="mark y"><svg><use href="#i-check"/></svg>One shared standard</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid3 why3">
+      <div class="why"><span class="n2">Why not just "implement open standards"?</span><h3>The standards are the envelope. Valet is the form inside it.</h3><p>OAuth, FAPI 2.0, RAR and DPoP say how to carry a permission. They leave each organisation to define what "pay my bills" means. Ten organisations that each define it differently mean ten integrations for every agent, and most agents won't bother.</p></div>
+      <div class="why"><span class="n2">Why not build your own?</span><h3>You'd be building the easy half.</h3><p>One organisation can build a consent screen. What it cannot build alone is the half that makes it worth having: agents integrating once for everyone, verified agent identity, and decisions no standard makes for you, such as instant pause, rand limits and single-use approvals.</p></div>
+      <div class="why"><span class="n2">Why trust it?</span><h3>You run it. You can read every line.</h3><p>Valet is an open-source project, not a hosted service. You deploy it next to the identity platform you already have, keep your data and keys, and can fork it if you ever need to.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="band alt" id="how">
+  <div class="inner">
+    <div class="sechead">
+      <span class="prod">Valet · how it works</span>
+ <h2>Connect once. Act inside the limits. Approve the exceptions. Stop at any time. Prove what happened.</h2>
+ <p class="lede">The example below is banking. The same five moments apply to an insurer, a medical scheme, a telecoms provider or a municipality.</p>
+    </div>
+    <div class="steps">
+      <div class="step"><span class="num">1 · Connect</span><h3>On your screen, never the agent's</h3><p>The agent asks for access. The customer lands on your own app or website, sees which verified organisation runs the agent, chooses what it may do, and confirms the way they already sign in.</p><p class="eg">Thandi chooses "Bill payer: existing beneficiaries, up to R2,000 a month, for 90 days".</p></div>
+ <div class="step"><span class="num">2 · Act</span><h3>Checked on every request</h3><p>The customer's permission is tied to the agent's own cryptographic key at the moment they agree, so a copied token or code is useless to anyone else. Your systems check the mandate, the limits and whether access is still on, every single time.</p><p class="eg">Kaya pays the water bill. Within the mandate, so it goes through.</p></div>
+      <div class="step"><span class="num">3 · Approve</span><h3>The customer decides the exceptions</h3><p>Anything outside the mandate goes to the customer in your app, showing exactly what will happen. One approval covers one action, once.</p><p class="eg">City Power is a new recipient. Thandi approves R1,250 in her bank app.</p></div>
+      <div class="step"><span class="num">4 · Stop</span><h3>One tap, instantly</h3><p>Pause or disconnect any agent from your app. The very next request is refused, while every other channel keeps working.</p><p class="eg">Thandi taps "Pause Kaya". Kaya's keys stop working at once.</p></div>
+    </div>
+    <div class="receipt">
+      <div style="display:flex;flex-direction:column;gap:12px">
+ <span class="eyebrow">5 · Prove</span>
+        <h3>The agent is never its own witness.</h3>
+ <p class="muted">Each request, approval and refusal becomes a signed record, chained so that changing any one of them shows. In your app, one screen per payment answers the four questions a dispute turns on: which agent asked, what the customer allowed, whose decision it was, and what you did, with your own payment reference.</p>
+ <p class="muted">A receipt is evidence, not a verdict. Who carries a loss stays with your terms and the law; what changes is that nobody is arguing from the agent's version of events.</p>
+ <p class="eg" style="font-size:.9rem;color:var(--ink-2)">Three weeks later Thandi queries the City Power payment. The record shows she approved that exact payment in her bank app.</p>
+      </div>
+      <pre class="rc" aria-label="Example receipt"><span class="c"># receipt 42 · signed by Marula Bank (fictional)</span>
+agent       kaya · Kaya Labs (Pty) Ltd
+customer    thandi
+action      payment · City Power · R1,250.00
+basis       approved by customer in app, 09:20
+evidence customer confirmed
+mandate     bill_payer · R2,000.00 / month
+bank ref bp_7Hq2…Lm4x · paid once
+previous    sha256:9f2c…a71e
+this        sha256:4be0…13c9   <span class="g">chain intact ✓</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- LADDER -->
+<section class="band" id="ladder">
+  <div class="inner">
+    <div class="sechead">
+ <span class="eyebrow">Start small</span>
+ <h2>Three settings. You decide how far each agent may go.</h2>
+ <p class="lede">Saying yes to agents is not one decision. It is a ladder, and your organisation chooses which customers and which agents may reach each rung.</p>
+    </div>
+ <div class="grid3">
+ <div class="step"><span class="num">1 · View only</span><h3>Information first</h3><p>The agent can read balances and transactions. Nothing can move.</p><p class="eg">"What did I spend on electricity this year?"</p></div>
+ <div class="step"><span class="num">2 · Approve every payment</span><h3>The agent asks, the customer decides</h3><p>The agent can ask to pay someone the customer has already saved. Every payment comes back to the customer in your app.</p><p class="eg">"Pay my water bill." Thandi approves it on her phone.</p></div>
+ <div class="step"><span class="num">3 · Standing limit</span><h3>Routine bills without a tap</h3><p>For agents you have verified: saved payees only, up to a monthly limit the customer sets. Anything else still comes back for approval.</p><p class="eg">Kaya pays the water bill inside Thandi's R2,000 a month.</p></div>
+    </div>
+    <div class="grid3 why3">
+ <div class="why"><span class="n2">What about the assistants people already use?</span><h3>They come in through your own front door.</h3><p>Mainstream assistants connect through a gateway you run, using the Model Context Protocol. They sit on the first two rungs: they can read, and they can ask. In the proof of concept this works with Claude.</p></div>
+ <div class="why"><span class="n2">Who is really acting?</span><h3>We only claim what can be verified.</h3><p>Behind a big assistant platform, your systems can identify the platform, not an individual agent. Valet says so, and holds those assistants to approval for every payment. A standing limit is for agents that prove who they are with their own key.</p></div>
+ <div class="why"><span class="n2">What if the assistant is tricked?</span><h3>The rules do not depend on the AI behaving.</h3><p>An instruction hidden in a payment reference can mislead a model. It cannot make your systems pay someone the customer never saved, raise a limit, or skip an approval.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRINCIPLES -->
+<section class="band alt">
+  <div class="inner">
+    <div class="sechead">
+      <span class="eyebrow">What Valet holds to</span>
+ <h2>Six rules, each one built into the code.</h2>
+    </div>
+    <div class="principles">
+      <div class="pr"><h3>Never collect passwords</h3><p>An agent gets its own key, issued by you. It never sees a password, PIN or one-time code.</p></div>
+      <div class="pr"><h3>Write the authority down first</h3><p>Before an agent acts, the customer sees which payees, how much, how often and for how long.</p></div>
+      <div class="pr"><h3>Keep the rules outside the model</h3><p>An AI can be misled by a hidden instruction. Your systems can't be talked out of a limit.</p></div>
+      <div class="pr"><h3>The agent is never its own witness</h3><p>You keep signed, tamper-evident receipts of everything it asked for and everything you decided.</p></div>
+ <div class="pr"><h3>Never touch the money</h3><p>Valet decides and records. Your own payment system moves the money, and a retry or a timeout can never pay twice.</p></div>
+      <div class="pr"><h3>You stay in charge</h3><p>Valet is open infrastructure you run yourself, on the identity platform you already have.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section class="band" id="use-cases">
+  <div class="inner">
+    <div class="sechead">
+      <span class="eyebrow">Use cases</span>
+      <h2>Banking is the first use case, not the only one.</h2>
+      <p class="lede">Anywhere an agent acts on a customer's account, the same questions apply: what may it do on its own, what must the customer approve, and what must it never touch?</p>
+    </div>
+    <div class="uc-tabs" role="tablist" aria-label="Use cases">
+      <button class="uc-tab" role="tab" id="t-bank" aria-controls="p-bank" aria-selected="true">Banking &amp; payments</button>
+      <button class="uc-tab" role="tab" id="t-ins" aria-controls="p-ins" aria-selected="false" tabindex="-1">Insurance &amp; medical schemes</button>
+      <button class="uc-tab" role="tab" id="t-tel" aria-controls="p-tel" aria-selected="false" tabindex="-1">Telecoms &amp; utilities</button>
+    </div>
+
+    <div class="uc" role="tabpanel" id="p-bank" aria-labelledby="t-bank">
+      <div class="copy">
+        <h3>Bill payments, budgeting and savings</h3>
+        <p>Customers want assistants that pay the monthly bills, flag unusual spending and move money to savings. Today that means a shared login. With Valet it means a mandate.</p>
+        <ul>
+          <li>Read balances and transactions for budgeting.</li>
+          <li>Pay existing beneficiaries within a monthly rand limit.</li>
+          <li>Start with every payment approved in your app, and widen only when your policy allows.</li>
+        </ul>
+      </div>
+      <div class="mandate">
+        <div class="m-head"><span class="m-av" aria-hidden="true">K</span><div class="m-who"><b>Kaya</b><div>money assistant · Kaya Labs</div></div><span class="m-ver">✓ Verified agent</span></div>
+        <div class="m-body">
+          <div class="m-title">Mandate · bank account</div>
+          <div class="rule may"><svg><use href="#i-check"/></svg><span><b>May</b> read balances; pay existing beneficiaries up to <span class="mono">R2,000.00</span> a month</span></div>
+          <div class="rule ask"><svg><use href="#i-ask"/></svg><span><b>Asks first</b> for new recipients or anything over the limit</span></div>
+          <div class="rule never"><svg><use href="#i-never"/></svg><span><b>Never</b> adds beneficiaries, raises limits or sees card numbers</span></div>
+        </div>
+        <div class="m-foot"><span>90 days</span><span>Fictional example</span></div>
+      </div>
+    </div>
+
+    <div class="uc" role="tabpanel" id="p-ins" aria-labelledby="t-ins" hidden>
+      <div class="copy">
+        <h3>Claims, benefits and policy admin</h3>
+        <p>An agent that gathers documents and lodges a claim saves the customer hours. An agent that can also change the payout account is a fraud waiting to happen. Valet separates the two.</p>
+        <ul>
+          <li>Check benefits and remaining limits before a doctor's visit.</li>
+          <li>Lodge a claim with supporting documents, tracked as the agent's action.</li>
+          <li>Send changes to cover or beneficiaries back to the policyholder to approve.</li>
+        </ul>
+      </div>
+      <div class="mandate">
+        <div class="m-head"><span class="m-av" aria-hidden="true" style="background:#0E8A60">C</span><div class="m-who"><b>Claimly</b><div>claims assistant · fictional operator</div></div><span class="m-ver">✓ Verified agent</span></div>
+        <div class="m-body">
+          <div class="m-title">Mandate · medical scheme membership</div>
+          <div class="rule may"><svg><use href="#i-check"/></svg><span><b>May</b> view benefits and claims history; lodge claims with documents</span></div>
+          <div class="rule ask"><svg><use href="#i-ask"/></svg><span><b>Asks first</b> before changing a plan option or adding a dependant</span></div>
+          <div class="rule never"><svg><use href="#i-never"/></svg><span><b>Never</b> changes the bank account claims are paid into</span></div>
+        </div>
+        <div class="m-foot"><span>12 months</span><span>Fictional example</span></div>
+      </div>
+    </div>
+
+    <div class="uc" role="tabpanel" id="p-tel" aria-labelledby="t-tel" hidden>
+      <div class="copy">
+        <h3>Bundles, accounts and household bills</h3>
+        <p>Agents can keep data bundles topped up and municipal accounts paid. The same login also opens a SIM swap or a number port, which is why it should never be shared.</p>
+        <ul>
+          <li>Buy data and airtime within a monthly spend limit.</li>
+          <li>Pay municipal and utility accounts on time.</li>
+          <li>Send contract upgrades or plan changes to the customer to approve.</li>
+        </ul>
+      </div>
+      <div class="mandate">
+        <div class="m-head"><span class="m-av" aria-hidden="true" style="background:#A4560B">H</span><div class="m-who"><b>Homebase</b><div>household assistant · fictional operator</div></div><span class="m-ver">✓ Verified agent</span></div>
+        <div class="m-body">
+          <div class="m-title">Mandate · mobile and municipal accounts</div>
+          <div class="rule may"><svg><use href="#i-check"/></svg><span><b>May</b> buy bundles up to <span class="mono">R500.00</span> a month; pay the municipal account</span></div>
+          <div class="rule ask"><svg><use href="#i-ask"/></svg><span><b>Asks first</b> before upgrading a contract or changing a plan</span></div>
+          <div class="rule never"><svg><use href="#i-never"/></svg><span><b>Never</b> requests a SIM swap, ports the number or changes contact details</span></div>
+        </div>
+        <div class="m-foot"><span>6 months</span><span>Fictional example</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHO DOES WHAT -->
+<section class="band alt">
+  <div class="inner">
+    <div class="sechead">
+      <span class="eyebrow">Who does what</span>
+      <h2>Valet supplies the rules and the parts. You make every decision.</h2>
+      <p class="lede">Valet is a project, not a hosted service. There is no Valet cloud between you, your customers and their agents.</p>
+    </div>
+    <div class="split">
+      <div class="col">
+        <h3>The Valet project provides</h3>
+        <ul>
+          <li><svg><use href="#i-dot"/></svg><span>A shared permission standard: access levels, approval rules, error codes and the receipt format</span></li>
+ <li><svg><use href="#i-dot"/></svg><span>Reference components: grant service, checks on every request, approval flow, payment records that cannot pay twice, receipt chain</span></li>
+          <li><svg><use href="#i-dot"/></svg><span>Screen designs for consent, approvals and the customer's list of connected agents</span></li>
+          <li><svg><use href="#i-dot"/></svg><span>An SDK, so agent builders integrate once for every organisation</span></li>
+          <li><svg><use href="#i-dot"/></svg><span>Adapters for identity platforms, and tests that prove a deployment behaves</span></li>
+        </ul>
+      </div>
+      <div class="col yours">
+        <h3>Your organisation decides and runs</h3>
+        <ul>
+          <li><svg><use href="#i-check"/></svg><span>Customer sign-in and step-up, on your existing identity platform</span></li>
+          <li><svg><use href="#i-check"/></svg><span>Which access levels, limits and durations you offer</span></li>
+          <li><svg><use href="#i-check"/></svg><span>Which agents you admit, and when you withdraw trust</span></li>
+          <li><svg><use href="#i-check"/></svg><span>Your brand, your app and your notifications</span></li>
+ <li><svg><use href="#i-check"/></svg><span>Moving the money, on your own payment system; Valet never executes a payment</span></li>
+          <li><svg><use href="#i-check"/></svg><span>Keys, data, retention and POPIA obligations; fraud, disputes, support and regulators</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="platforms">
+      <div class="col">
+        <h3>Works with the identity platform you already run</h3>
+ <p class="muted" style="font-size:.95rem">Any OpenID Connect provider can sign your customers in. Platforms that support the agent-side standards can also issue the agent's keys themselves. Proven end to end on Keycloak so far; the others are designed for and still to be proven, with PingFederate next.</p>
+ <div class="chips"><span class="chip">Keycloak · proven</span><span class="chip">PingFederate · next</span><span class="chip">Auth0</span><span class="chip">Microsoft Entra ID</span><span class="chip">Okta</span><span class="chip">Curity</span><span class="chip">any OpenID Connect provider</span></div>
+      </div>
+      <div class="col">
+        <h3>Built only on open standards</h3>
+ <p class="muted" style="font-size:.95rem">No proprietary protocol to bet on. If you know these, you already know how Valet works. Valet is aligned with the FAPI 2.0 Security Profile; it has not yet been through conformance testing, and the design lists where it differs.</p>
+ <div class="chips"><span class="chip">OAuth 2.0</span><span class="chip">FAPI 2.0 · aligned</span><span class="chip">PAR</span><span class="chip">RAR</span><span class="chip">DPoP</span><span class="chip">CIBA</span><span class="chip">OpenID Connect</span><span class="chip">MCP</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PURPOSE -->
+<section class="band alt" id="purpose">
+  <div class="inner">
+    <div class="sechead">
+      <span class="eyebrow">Our purpose · We secure your future</span>
+      <h2>Trust is the currency of digital transformation. We exist to drive down its cost.</h2>
+      <p class="lede">When trust is expensive, only the biggest players can afford it. Everyone else is kept out or pushed to weaker channels, and that is exactly where fraud gathers. Exclusion is not just unfair; it makes everyone less safe.</p>
+    </div>
+    <div class="receipt">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <span class="eyebrow">We have seen this before</span>
+        <h3>When web certificates became free and automatic, encryption became the norm.</h3>
+        <p class="muted">Certificates used to cost money and effort, so most sites went without and the whole web was less safe. Let's Encrypt changed that. Veridact makes the same move for AI agents, and Valet does it for the permissions they act on.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="https"><div><b>27%</b>2013</div><div class="now"><b>78%</b>2023</div></div>
+        <p class="muted" style="font-size:.85rem">Share of web pages loaded over HTTPS in Firefox. Source: EFF.</p>
+      </div>
+    </div>
+    <div class="principles" style="margin-top:40px">
+      <div class="pr"><h3>Inclusion over gatekeeping</h3><p>An agent from a startup or a township business is recognised by every member from day one, free.</p></div>
+      <div class="pr"><h3>Open and shared</h3><p>Open standards, open code under Apache 2.0, open governance and no lock-in. You can build, run and fix it without anyone's permission.</p></div>
+      <div class="pr"><h3>Privacy by design</h3><p>We prove facts. We do not hoard the documents behind them, and customer data never leaves the organisation that holds it.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- STATUS -->
+<section class="band" id="status">
+  <div class="inner">
+    <div class="sechead">
+      <span class="eyebrow">Where we are</span>
+      <h2>A working proof of concept. Now we want to hear from you.</h2>
+      <p class="lede">We would rather build what organisations actually need than guess. Here is what exists today and what we are looking for.</p>
+    </div>
+    <div class="status">
+ <div class="st done"><span class="tag">Working today</span><h3>Proof of concept</h3><ul><li>Connect an agent without sharing credentials</li><li>Permission tied to the agent's own key when the customer agrees</li><li>Limits checked on every request</li><li>Exceptions approved by the customer</li><li>Payments that cannot be paid twice after a retry or a timeout</li><li>Instant pause and disconnect</li><li>Signed, tamper-evident receipts, and an evidence page for each payment</li><li>A mainstream assistant connected through your own gateway</li><li>Run end to end with Keycloak, with signing keys in Azure Key Vault</li><li>Veridact: an open specification, a reference issuer and verifier, and delegation with human approval</li></ul></div>
+      <div class="st now"><span class="tag">Looking for now</span><h3>Design partners</h3><ul><li>Organisations deploying their own AI agents that need limits and evidence</li><li>Organisations seeing customers' agents in their channels</li><li>Agent builders who want one safe integration</li><li>Three to five founding members to shape and govern Veridact as shared infrastructure</li><li>Industry bodies shaping agent standards</li></ul></div>
+ <div class="st next"><span class="tag">Shaped with partners</span><h3>Pilots</h3><ul><li>Start view-only, then payments approved one by one</li><li>Your identity platform, your app and a sandbox of your payment system</li><li>Policy and liability agreed with your counsel</li><li>Independent security testing before any real money moves</li></ul></div>
+    </div>
+ <div class="receipt" style="margin-top:28px;align-items:center">
+      <div style="display:flex;flex-direction:column;gap:12px">
+ <span class="eyebrow">Read it yourself</span>
+ <h3>The code and the design are public.</h3>
+ <p class="muted">Both projects are Apache 2.0. Valet's design has been through an architecture review, each finding fixed or scheduled in the open, and its proof of concept ships with more than 140 automated tests and a published threat model.</p>
+ <div class="cta-row"><a class="btn" href="https://github.com/veridactlabs/veridact" target="_blank" rel="noopener">Veridact on GitHub</a><a class="btn ghost" href="https://github.com/veridactlabs/veridact-valet" target="_blank" rel="noopener">Valet on GitHub</a></div>
+      </div>
+ <div class="chips" style="margin-top:0">
+ <a class="chip" href="https://github.com/veridactlabs/veridact/blob/main/docs/specification.md" target="_blank" rel="noopener">Veridact specification</a>
+ <a class="chip" href="https://github.com/veridactlabs/veridact-valet/blob/main/docs/where-valet-fits.md" target="_blank" rel="noopener">Where Valet fits: open banking and your identity platform</a>
+ <a class="chip" href="https://github.com/veridactlabs/veridact-valet/blob/main/docs/technical-design.md" target="_blank" rel="noopener">Valet technical design</a>
+ <a class="chip" href="https://github.com/veridactlabs/veridact-valet/blob/main/docs/threat-model.md" target="_blank" rel="noopener">Threat model: controls, status and known gaps</a>
+ <a class="chip" href="https://github.com/veridactlabs/veridact-valet/blob/main/docs/mcp-gateway-design.md" target="_blank" rel="noopener">MCP gateway design</a>
+ <a class="chip" href="https://github.com/veridactlabs/veridact-valet/blob/main/docs/control-framework-mapping.md" target="_blank" rel="noopener">Control framework mapping</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TALK -->
+<section class="band dark talk" id="talk">
+  <div class="inner">
+    <div class="copy">
+      <span class="eyebrow">Start a conversation</span>
+      <h2>Help us build the right thing.</h2>
+      <p class="lede">Tell us what you're seeing with AI agents and where you'd invest first. It takes about three minutes, and we read every answer.</p>
+      <ul>
+        <li>We'll reply personally, usually within two working days.</li>
+        <li>No mailing list. Your details are used only to reply and to shape Veridact and Valet.</li>
+        <li>Prefer a call? Say so in your answer and we'll arrange one.</li>
+      </ul>
+    </div>
+
+    <form class="disc" id="disc" novalidate>
+      <div id="form-fields" style="display:grid;gap:18px">
+        <div class="row2">
+          <div class="field"><label for="f-name">Your name</label><input type="text" id="f-name" name="name" autocomplete="name" required></div>
+          <div class="field"><label for="f-email">Work email</label><input type="email" id="f-email" name="email" autocomplete="email" required></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label for="f-org">Organisation</label><input type="text" id="f-org" name="organisation" autocomplete="organization" required></div>
+          <div class="field"><label for="f-role">Your role</label><input type="text" id="f-role" name="role" autocomplete="organization-title" placeholder="e.g. Head of fraud, CTO"></div>
+        </div>
+        <div class="field">
+          <label for="f-sector">Sector</label>
+          <select id="f-sector" name="sector" required>
+            <option value="">Choose one</option>
+            <option>Bank</option><option>Insurer or medical scheme</option><option>Telecoms or utility</option>
+            <option>Fintech or payments</option><option>Public sector</option><option>AI agent builder</option>
+            <option>Industry body or regulator</option><option>Other</option>
+          </select>
+        </div>
+        <fieldset class="field">
+          <legend>Are AI agents acting for your customers today?</legend>
+          <div class="opts">
+            <label class="opt"><input type="radio" name="agents_today" value="We see third-party agents in our channels" id="a1"><span>We see third-party agents</span></label>
+            <label class="opt"><input type="radio" name="agents_today" value="We run our own agents" id="a2"><span>We run our own</span></label>
+            <label class="opt"><input type="radio" name="agents_today" value="Planning to" id="a3"><span>Planning to</span></label>
+            <label class="opt"><input type="radio" name="agents_today" value="Not yet" id="a4"><span>Not yet</span></label>
+            <label class="opt"><input type="radio" name="agents_today" value="Don't know" id="a5"><span>Don't know</span></label>
+          </div>
+        </fieldset>
+        <fieldset class="field">
+          <legend>What worries you most? <span class="hint">Choose any</span></legend>
+          <div class="opts">
+            <label class="opt"><input type="checkbox" name="worries" value="Shared credentials" id="w1"><span>Shared credentials</span></label>
+            <label class="opt"><input type="checkbox" name="worries" value="Fraud and scams" id="w2"><span>Fraud and scams</span></label>
+            <label class="opt"><input type="checkbox" name="worries" value="Disputes and liability" id="w3"><span>Disputes and liability</span></label>
+            <label class="opt"><input type="checkbox" name="worries" value="Regulation" id="w4"><span>Regulation</span></label>
+            <label class="opt"><input type="checkbox" name="worries" value="Customer experience" id="w5"><span>Customer experience</span></label>
+            <label class="opt"><input type="checkbox" name="worries" value="Losing the customer relationship" id="w6"><span>Losing the customer relationship</span></label>
+          </div>
+        </fieldset>
+        <fieldset class="field">
+          <legend>Where would you invest first?</legend>
+          <div class="opts">
+            <label class="opt"><input type="radio" name="invest_first" value="Limits and evidence for our own agents" id="i1"><span>Controls for our own agents</span></label>
+            <label class="opt"><input type="radio" name="invest_first" value="Safe access for third-party agents" id="i2"><span>Safe access for outside agents</span></label>
+            <label class="opt"><input type="radio" name="invest_first" value="Evidence and dispute handling" id="i3"><span>Evidence and disputes</span></label>
+            <label class="opt"><input type="radio" name="invest_first" value="An industry standard" id="i4"><span>An industry standard</span></label>
+            <label class="opt"><input type="radio" name="invest_first" value="Not yet" id="i5"><span>Not yet</span></label>
+          </div>
+        </fieldset>
+        <div class="field">
+          <label for="f-need">What would have to be true for you to use something like Veridact or Valet?</label>
+          <textarea id="f-need" name="what_would_need_to_be_true" placeholder="A problem you're facing, a requirement, a reason it wouldn't work for you. All of it helps."></textarea>
+        </div>
+        <label class="consent" for="f-consent"><input type="checkbox" id="f-consent" name="consent" value="yes" required><span>I agree that Veridact may use these details to reply to me and to shape Veridact and Valet. They won't be sold, shared or added to a marketing list.</span></label>
+        <input type="text" name="_gotcha" id="f-gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-5000px;width:1px;height:1px">
+        <div class="form-actions">
+          <button class="btn" type="submit" id="f-submit">Send</button>
+          <span class="form-msg" id="f-msg" role="status" aria-live="polite"></span>
+        </div>
+      </div>
+      <div class="done-panel" id="done" hidden>
+        <h3 id="done-title">Thank you. We'll be in touch.</h3>
+        <p class="muted" id="done-text">We read every answer and will reply personally.</p>
+        <div id="fallback" hidden style="display:grid;gap:12px">
+          <pre id="summary"></pre>
+          <div class="form-actions"><button class="btn ghost" type="button" id="copy">Copy my answers</button><span class="form-msg" id="copy-msg" role="status" aria-live="polite"></span></div>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="band" id="faq">
+  <div class="inner">
+    <div class="sechead"><span class="eyebrow">Questions</span><h2>What people ask first</h2></div>
+    <div class="faq">
+      <h3>Veridact</h3>
+      <details><summary>Why not build agent identity ourselves?</summary><p>You could, and it would recognise exactly the agents you onboard yourself. Operators will not register separately with every bank and insurer, nobody joins a competitor's scheme, and the moment your agents call a partner you need to federate anyway. Veridact lets you keep every risk decision in-house while sharing only the plumbing that has to be shared.</p></details>
+      <details><summary>Doesn't a shared network help our competitors?</summary><p>Only with what is already public. The network shares one fact: which organisation operates an agent, and what it delegated. No customer data, onboarding results, fraud signals or risk decisions ever leave your bank. Think of the padlock on a website: every bank relies on the same certificate system, and none gives anything away by doing so.</p></details>
+      <details><summary>What happens if Veridact goes down?</summary><p>Your verification keeps running on cached, signed files, and members can run their own mirrors. Existing credentials stay valid for hours, and agents can renew from another accredited issuer. An outage degrades over hours, not seconds.</p></details>
+      <details><summary>Does Veridact see our customers or our traffic?</summary><p>No. Verification happens inside your systems. Credentials and the public log describe organisations, roles and opaque agent identifiers, never customers. Customer consent stays in your own systems.</p></details>
+      <details><summary>There are many AI identity products. How is Veridact different?</summary><p>Most work inside one organisation: they register and control the agents a company builds, and their trust ends at that company's boundary. Veridact is built for the space between organisations. It identifies an agent arriving from another company, proves which organisation answers for it and who authorised it, and lets you verify all of that locally.</p></details>
+      <h3>Valet</h3>
+      <details><summary>Is Valet a hosted service?</summary><p>No. Valet is an open-source project (Apache 2.0) that your organisation deploys and runs in its own environment. Your customers' data and your keys never leave you. Commercial support, integration and assurance are available from IAME (IAM Experts) if you want them.</p></details>
+      <details><summary>Do we have to let outside agents into our systems?</summary><p>No. Many organisations will start with their own AI assistants, which need exactly the same mandates, limits, approvals and evidence. Opening to verified outside agents becomes a policy decision later, not a rebuild.</p></details>
+      <details><summary>Is it only for banks?</summary><p>No. Banking is the first use case because the risk is clearest there. The same model fits insurers, medical schemes, telecoms providers, utilities, municipalities and anyone else whose customers will send agents to act on their accounts.</p></details>
+ <details><summary>We already run an identity platform. Do we have to replace it?</summary><p>No. Valet works with what you have. Any OpenID Connect provider can sign customers in, and platforms that support the agent-side standards can issue the agent's keys themselves. Today that is proven end to end on Keycloak; other platforms are designed for and still to be proven.</p></details>
+ <details><summary>We already have open banking. What does Valet add?</summary><p>Open banking answers which accredited company may access an account. Valet answers which agent may do what, right now, on whose instruction, and what you can show afterwards. It is an agent profile on the same consent model, not a second consent system: it adds payee, amount and approval rules, enforcement on every request, and a signed record of each action.</p></details>
+ <details><summary>Our identity vendor has an agent product. Why Valet?</summary><p>Valet does not compete with your identity platform; it runs on it. The platform signs customers in and issues tokens. Valet adds the rules for acting on an account, enforces them on every request, and keeps the record inside your boundary, in open code you can audit, whichever vendor you use.</p></details>
+ <details><summary>Does Valet move the money?</summary><p>No. Valet decides whether a payment may go ahead, holds the amount against the customer's limit and records the outcome. Your own payment system executes it. If that system is slow to answer, the payment is treated as unconfirmed, never as failed, so a retry cannot pay twice.</p></details>
+ <details><summary>Does a receipt decide who is liable?</summary><p>No. A receipt shows which agent asked, what the customer allowed, whether the customer approved that exact payment, and what you did. Liability is for your terms, your agreement with the agent's operator and the law. The receipts are the evidence those rely on.</p></details>
+ <details><summary>Does Valet make an AI agent safe?</summary><p>Valet doesn't make the AI smarter. It makes its mistakes containable. An agent can still be misled, but it can only act inside the mandate the customer chose, anything else goes back to the customer, and every decision leaves evidence. A payment made inside a standing limit is recorded as exactly that: within what the customer allowed, which is not the same as proof that the customer asked for it.</p></details>
+      <h3>Both</h3>
+      <details><summary>What does it cost?</summary><p>The code is open source, and Veridact's domain-level credentials are free. Organisations that want help pay for certification, support and integration. We're working out the details with design partners, which is one more reason we'd like to hear from you.</p></details>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="band">
+  <div class="inner">
+    <div class="foot-top">
+      <a class="logo" href="#top" aria-label="Veridact, back to top">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#2457F5"/><path d="M9 16.5l4.5 4.5L23 11" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Veridact
+      </a>
+ <div class="foot-links"><a href="#identity">Veridact</a><a href="#valet">Valet</a><a href="#purpose">Purpose</a><a href="https://github.com/veridactlabs/veridact" target="_blank" rel="noopener">Veridact on GitHub</a><a href="https://github.com/veridactlabs/veridact-valet" target="_blank" rel="noopener">Valet on GitHub</a><a href="#talk">Start a conversation</a></div>
+    </div>
+    <p class="small">Veridact answers "which agent is this?". Valet answers "what did this person allow it to do?". Both are open source under Apache 2.0. Built in South Africa. We secure your future.</p>
+ <p class="small">InsureCo, Marula Bank, Kaya, Kaya Labs, Claimly, Homebase and Thandi are fictional examples. Product names listed under identity platforms, and Claude, belong to their owners and show compatibility, not partnership or endorsement. Quotes are reproduced as published or reported and are not endorsements of Veridact or Valet. Nothing on this site is legal advice.</p>
+    <div class="sources">
+      <span>Sources:</span>
+      <a href="https://techcentral.co.za/sa-banks-warn-customers-logins-ai-agents/287667/" target="_blank" rel="noopener">TechCentral, SA banks warn customers not to share logins with AI agents (26 October 2026)</a>
+      <a href="https://techcentral.co.za/how-ai-agents-could-rewrite-the-rules-of-south-african-banking/282406/" target="_blank" rel="noopener">TechCentral, How AI agents could rewrite the rules of South African banking (8 June 2026)</a>
+      <a href="https://www.linkedin.com/in/rene-mattheus/" target="_blank" rel="noopener">Rene Mattheus, Your AI agent spent the money. Who gets the bill? (27 October 2026)</a>
+      <span>BioCatch, 2026 Future of Digital Trust report · SABRIC annual crime statistics 2025 · EFF, HTTPS adoption measured in Firefox</span>
+      <a href="https://bowmanslaw.com/insights/south-africa-new-requirement-for-issuers-of-electronic-funds-transfer-credit-payment-instructions-on-behalf-of-payers-in-the-national-payment-system-to-register-with-the-south-african-reserve-bank/" target="_blank" rel="noopener">Bowmans, SARB Directive 2 of 2024: registration for issuers of EFT credit payment instructions</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ---------------------------------------------------------------------------
+   DISCOVERY FORM
+   To collect answers on your own website, create a form endpoint with a form
+   service (for example Formspree, Getform or Web3Forms) and paste its URL here.
+   The form posts the answers as JSON. Until it is set, the page shows the
+   visitor a copy of their answers to send instead.
+--------------------------------------------------------------------------- */
+const FORM_ENDPOINT = "https://formspree.io/f/xrppqnon";
+
+(function(){
+  // use-case tabs
+  const tabs=[...document.querySelectorAll('.uc-tab')];
+  function show(t){
+    tabs.forEach(x=>{const on=x===t;x.setAttribute('aria-selected',on);x.tabIndex=on?0:-1;document.getElementById(x.getAttribute('aria-controls')).hidden=!on;});
+  }
+  tabs.forEach((t,i)=>{
+    t.addEventListener('click',()=>show(t));
+    t.addEventListener('keydown',e=>{
+      if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft')return;
+      const n=tabs[(i+(e.key==='ArrowRight'?1:tabs.length-1))%tabs.length];show(n);n.focus();e.preventDefault();
+    });
+  });
+
+  // form
+  const form=document.getElementById('disc'),msg=document.getElementById('f-msg'),btn=document.getElementById('f-submit');
+  function answers(){
+    const fd=new FormData(form),o={};
+    for(const [k,v] of fd.entries()){ if(k==='_gotcha')continue; o[k]=o[k]?[].concat(o[k],v):v; }
+    o.submitted_at=new Date().toISOString(); o.page='Veridact';
+    return o;
+  }
+  function summary(o){
+    const label={name:'Name',email:'Email',organisation:'Organisation',role:'Role',sector:'Sector',agents_today:'Agents today',worries:'Worries',invest_first:'Invest first',what_would_need_to_be_true:'What would need to be true'};
+    return Object.keys(label).filter(k=>o[k]).map(k=>label[k]+': '+[].concat(o[k]).join(', ')).join('\n');
+  }
+  function finish(sent,o){
+    document.getElementById('form-fields').hidden=true;
+    document.getElementById('done').hidden=false;
+    if(!sent){
+      document.getElementById('done-title').textContent='Almost there';
+      document.getElementById('done-text').textContent='This copy of the site cannot send answers yet. Please copy them and send them to the Veridact team through the contact details where you found this page.';
+      document.getElementById('fallback').hidden=false;
+      document.getElementById('summary').textContent=summary(o);
+    }
+    document.getElementById('done').scrollIntoView({block:'nearest'});
+  }
+  document.getElementById('copy').addEventListener('click',()=>{
+    const t=document.getElementById('summary').textContent,m=document.getElementById('copy-msg');
+    const sel=()=>{const r=document.createRange();r.selectNodeContents(document.getElementById('summary'));const s=getSelection();s.removeAllRanges();s.addRange(r);m.textContent='Selected. Press Ctrl+C or Cmd+C to copy.';};
+    try{navigator.clipboard.writeText(t).then(()=>{m.textContent='Copied.';},sel);}catch(e){sel();}
+  });
+  form.addEventListener('submit',async e=>{
+    e.preventDefault(); msg.className='form-msg'; msg.textContent='';
+    if(document.getElementById('f-gotcha').value)return;
+    const need=[['f-name','your name'],['f-email','your work email'],['f-org','your organisation'],['f-sector','your sector']];
+    for(const [id,what] of need){const el=document.getElementById(id);if(!el.value.trim()){msg.className='form-msg err';msg.textContent='Please add '+what+'.';el.focus();return;}}
+    const em=document.getElementById('f-email');
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em.value.trim())){msg.className='form-msg err';msg.textContent='That email address looks incomplete.';em.focus();return;}
+    if(!document.getElementById('f-consent').checked){msg.className='form-msg err';msg.textContent='Please tick the consent box so we can reply.';document.getElementById('f-consent').focus();return;}
+    const o=answers();
+    if(!FORM_ENDPOINT){finish(false,o);return;}
+    btn.disabled=true; msg.textContent='Sending…';
+    try{
+      const r=await fetch(FORM_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(o)});
+      if(!r.ok)throw new Error(r.status);
+      finish(true,o);
+    }catch(err){
+      btn.disabled=false; finish(false,o);
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
