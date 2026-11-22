@@ -19,7 +19,7 @@ export const pages = [
   {
     repo: 'veridact', path: 'docs/specification.md', slug: 'veridact/spec',
     label: 'Specification', title: 'Veridact specification', bcp14: true,
-    badge: { text: '0.5', variant: 'note' },
+    badge: { text: 'Draft 0.5', variant: 'caution' },
   },
   { repo: 'veridact', path: 'docs/proposals/0.5-sd-jwt-vc.md', slug: 'veridact/proposals/v0-5-sd-jwt-vc', label: '0.5: SD-JWT VC and known assistants' },
   { repo: 'veridact', path: 'docs/proposals/0.4-iiw42-proposals.md', slug: 'veridact/proposals/v0-4-iiw42', label: '0.4: IIW 42 proposals' },

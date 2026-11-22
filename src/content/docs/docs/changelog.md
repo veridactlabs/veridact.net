@@ -5,7 +5,7 @@ description: Versions of the Veridact specification and the Valet profile, and w
 
 ## Veridact specification
 
-### 0.5 · 22 November 2026
+### 0.5 (draft) · 22 November 2026
 
 Moves Veridact from W3C VC Data Model 2.0 with did:webvh to the formats the IETF OAuth working group is standardising. The trust model, tiers, ACME-A, delegation, sub-agents, the transparency log and the verification order are unchanged. The reference packages implement it, and the staging network was reset for the switch.
 
@@ -17,7 +17,7 @@ Moves Veridact from W3C VC Data Model 2.0 with did:webvh to the formats the IETF
 - New presentation pattern C: **attestation-based client authentication**.
 - New **Known-Assistant Credentials** identify mainstream assistants such as Claude and ChatGPT, with a kill switch, without their platforms taking part.
 
-[Full list of changes](/docs/veridact/spec/#changes-from-v04) · [Proposal](/docs/veridact/proposals/v0-5-sd-jwt-vc/)
+[Full list of changes](/docs/veridact/spec/#appendix-a-changes-from-v04) · [Proposal](/docs/veridact/proposals/v0-5-sd-jwt-vc/)
 
 ### 0.4 · 19 November 2026
 
